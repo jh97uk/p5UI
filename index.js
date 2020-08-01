@@ -26,24 +26,25 @@ class Button{
         this.cornerRadius = new CornerRadius(8);
         this.backgroundColor = color('rgb(25, 255, 255)');
         this.hoverBackgroundColor = color('rgb(255, 255, 255)');
+        this.onMouseDownBackgroundColor = color('rgb(255, 25, 255)');
         this.textColor = color('rgb(20, 20, 20)');
         this.mouseOnButton = false;
-        this.scale = 1;
-        this.inc = 0;
+        this.borderColor = 'rgb(0, 0, 0)';
+        this.borderWeight = 0;
+        this.disabled = false;
     }
 
     update(){
-        this.onMouseHoverOver();
-        
-        if(this.inc <1){
-            this.inc+=deltaTime/800
-        }
-        
+        this.onMouseHoverOver();    
     }
 
     onMouseHoverOver(){
         if(mouseX >= this.x && mouseX <= this.x+this.width && mouseY >= this.y && mouseY <= this.y+this.height){
-            fill(this.hoverBackgroundColor)
+            if(mouseIsPressed){
+                fill(this.onMouseDownBackgroundColor)
+            } else{
+                fill(this.hoverBackgroundColor)
+            }
             this.mouseOnButton = true
         } else{
             fill(this.backgroundColor)
@@ -53,15 +54,20 @@ class Button{
 
     onLeftClick(){
         if(this.mouseOnButton){
-
             this.onPressedCallback();
         }
     }
 
     draw(){
+        if(this.borderWeight == 0){
+            noStroke();
+        } else{
+            stroke(this.borderColor);
+            strokeWeight(this.borderWeight);
+        }
         translate(this.x, this.y)
-        scale(lerp(1, 0.97, this.inc));
         rect(0, 0, this.width, this.height, this.cornerRadius.topLeft, this.cornerRadius.topRight, this.cornerRadius.bottomLeft, this.cornerRadius.bottomRight)
+        noStroke();
         textSize(14)
         fill(this.textColor);
         text(this.text, (this.width/2)-textWidth(this.text)/2, (textAscent()-3)+(this.height/2)-(textAscent())/2); 
@@ -70,13 +76,15 @@ class Button{
 
 function setup(){
     createCanvas(windowWidth, windowHeight);
-    button = new Button(100, 200, 100, 30, "Press me ag!", function(){
+    button = new Button(20, 20, 100, 30, "Press me!", function(){
         console.log("button pressed");
     })
+    button.cornerRadius = new CornerRadius([8, 0, 9, 20]);
+    button.borderWeight = 1;
 }
 
 function mouseClicked(){
-    button.onLeftClick();
+    button.onLeftClick(); // Temporary, will make this work in the class standalone later on.
 }
 
 function draw(){
