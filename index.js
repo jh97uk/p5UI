@@ -24,6 +24,7 @@ class Button{
         this.labelText = text;
         this.onPressedCallback = onPressed;
         this.cornerRadius = new CornerRadius(8);
+        this.originalBackgroundColor = color('rgb(25, 255, 255)');
         this.backgroundColor = color('rgb(25, 255, 255)');
         this.hoverBackgroundColor = color('rgb(255, 255, 255)');
         this.onMouseDownBackgroundColor = color('rgb(255, 25, 255)');
@@ -40,14 +41,14 @@ class Button{
 
     onMouseHoverOver(){
         if(mouseX >= this.x && mouseX <= this.x+this.width && mouseY >= this.y && mouseY <= this.y+this.height){
-            if(mouseIsPressed){
-                fill(this.onMouseDownBackgroundColor)
-            } else{
-                fill(this.hoverBackgroundColor)
-            }
             this.mouseOnButton = true
+            if(mouseIsPressed){
+                this.backgroundColor = this.onMouseDownBackgroundColor;
+            } else{
+                this.backgroundColor = this.hoverBackgroundColor;
+            }
         } else{
-            fill(this.backgroundColor)
+            this.backgroundColor = this.originalBackgroundColor;
             this.mouseOnButton = false;
         }
     }
@@ -59,6 +60,7 @@ class Button{
     }
 
     draw(){
+        fill(this.backgroundColor);
         if(this.borderWeight == 0){
             noStroke();
         } else{
@@ -71,20 +73,117 @@ class Button{
         textSize(14)
         fill(this.textColor);
         text(this.text, (this.width/2)-textWidth(this.text)/2, (textAscent()-3)+(this.height/2)-(textAscent())/2); 
+        resetMatrix()
+    }
+}
+
+class ToggleButton{
+    constructor(x, y, text, toggled, disabled, onToggledCallback){
+        this.x = x;
+        this.y = y;
+
+        this.width = 25;
+        this.height = 25;
+
+        this.borderColor = color('rgb(25, 25, 25)');
+        this.borderWeight = 2;
+        this.borderRadius = new CornerRadius(4);
+        
+        this.backgroundColor = color('rgb(200, 200, 200)');
+        this.checkedFillColor = color('rgb(0, 0, 230)');
+        this.textColor = color('rgb(0, 0, 0)');
+
+        this.text = text;
+        this.toggled = toggled;
+        this.disabled = disabled;
+
+        this.onToggledCallback = onToggledCallback;
+    }
+
+    update(){
+    }
+
+    onClicked(){
+        if(!this.disabled)
+            if(mouseX >= this.x && mouseX <= this.x+this.width && mouseY >= this.y && mouseY <= this.y+this.height){
+                this.toggled = !this.toggled;
+                this.onToggledCallback(this.toggled);
+            }
+                
+    }
+
+    draw(){
+        translate(this.x, this.y);
+        fill(this.backgroundColor)
+        if(this.borderWeight == 0){
+            noStroke();
+        } else{
+            stroke(this.borderColor);
+            strokeWeight(this.borderWeight);
+        }
+        rect(0, 0, this.width, this.height, this.borderRadius.topLeft, this.borderRadius.topRight, this.borderRadius.bottomLeft, this.borderRadius.bottomRight);
+        
+        if(this.toggled){
+            noStroke();
+            fill(this.checkedFillColor);
+            rect(3, 3, this.width-6, this.height-6, this.borderRadius.topLeft, this.borderRadius.topRight, this.borderRadius.bottomLeft, this.borderRadius.bottomRight);
+        }
+        
+        textSize(14);
+        noStroke();
+        fill(this.textColor);
+        text(this.text, this.width+10, (textAscent()-1)+(this.height/2)-(textAscent())/2);
+        resetMatrix()
+    }
+}
+
+class Label{
+    constructor(x, y, fontSize, text){
+        this.x = x;
+        this.y = y;
+
+        this.fontSize = fontSize;
+
+        this.textColor = color('rgb(20, 20, 20)');
+        this.text = text;
+    }
+
+    update(){
+    }
+
+    draw(){
+        fill(this.textColor)
+        textSize(this.fontSize);
+        text(this.text, this.x, this. y);
     }
 }
 
 function setup(){
     createCanvas(windowWidth, windowHeight);
     button = new Button(20, 20, 100, 30, "Press me!", function(){
-        console.log("button pressed");
+        testLabel.text = "Button pressed!";
     })
+
     button.cornerRadius = new CornerRadius([8, 0, 9, 20]);
     button.borderWeight = 1;
+
+    toggleButton = new ToggleButton(20, button.y+button.height+20, "Enable me", true, false, function(toggleStatus){
+        if(toggleStatus){
+            testLabel.text = "Toggle is enabled!"
+        } else{
+            testLabel.text = "Toggle is disabled!";
+        }
+    });
+
+    testLabel = new Label(toggleButton.x, toggleButton.y+toggleButton.height+20, 14, "Hello world!");
+
+
 }
 
 function mouseClicked(){
-    button.onLeftClick(); // Temporary, will make this work in the class standalone later on.
+    // Temporary, will make this work in the class standalone later on.
+    button.onLeftClick(); 
+    toggleButton.onClicked();
 }
 
 function draw(){
@@ -92,4 +191,9 @@ function draw(){
 
     button.draw();
     button.update();
+
+    toggleButton.draw();
+    toggleButton.update();
+
+    testLabel.draw();
 }
