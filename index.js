@@ -205,6 +205,31 @@ class SliderBar{
     }
 }
 
+class ProgressBar{
+    constructor(x, y, width, height, startingProgress){
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.progress = startingProgress
+        this.cornerRadius = new CornerRadius(4);
+    }
+
+    setProgress(progress){
+        this.progress = progress;
+    }
+
+    update(){
+    }
+    
+    draw(){
+        rect(this.x, this.y, this.width, this.height, this.cornerRadius.topLeft, this.cornerRadius.topRight, this.cornerRadius.bottomLeft, this.cornerRadius.bottomRight);
+        noStroke();
+        fill(color('rgb(80, 80, 80)'));
+        rect (this.x+2, this.y+2, (this.width-4)*this.progress, this.height-4, this.cornerRadius.topLeft, this.cornerRadius.topRight, this.cornerRadius.bottomLeft, this.cornerRadius.bottomRight);
+    }
+}
+
 function setup(){
     createCanvas(windowWidth, windowHeight);
     button = new Button(20, 20, 100, 30, "Press me!", function(){
@@ -223,10 +248,14 @@ function setup(){
     });
 
     testLabel = new Label(toggleButton.x, toggleButton.y+toggleButton.height+20, 14, "Hello world!");
-    slideBar = new SliderBar(testLabel.x, testLabel.y+testLabel.height, 100, 0, 10);
+    
+    slideBar = new SliderBar(testLabel.x, testLabel.y+testLabel.height, 100, 0, 1);
     slideBar.onValueChangedCallBack = function(value){
         testLabel.text = "Slider bar value: "+(Math.round(value * 10)/10);
+        progressBar.setProgress(value);
     }
+
+    progressBar = new ProgressBar(slideBar.x, slideBar.y+slideBar.height+20, 150, 25, 0.94);
 }
 
 function mouseClicked(){
@@ -248,4 +277,7 @@ function draw(){
 
     slideBar.update();
     slideBar.draw();
+
+    progressBar.update();
+    progressBar.draw();
 }
