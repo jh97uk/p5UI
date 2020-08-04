@@ -1,3 +1,4 @@
+
 class CornerRadius{
     constructor(radius){
         if(Number.isInteger(radius)){
@@ -141,7 +142,7 @@ class Label{
     constructor(x, y, fontSize, text){
         this.x = x;
         this.y = y;
-
+        this.height = textAscent();
         this.fontSize = fontSize;
 
         this.textColor = color('rgb(20, 20, 20)');
@@ -155,6 +156,52 @@ class Label{
         fill(this.textColor)
         textSize(this.fontSize);
         text(this.text, this.x, this. y);
+    }
+}
+
+class SliderBar{
+    constructor(x, y, width, min, max){
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = 20;
+        this.minValue = min;
+        this.maxValue = max;
+
+        this.percentage = 0;
+
+        this.grabberRadius = 10;
+        this.grabberX = 0;
+        this.onValueChangedCallBack = function(){};
+    }
+
+    onValueChanged(value){
+        this.onValueChangedCallBack(value);
+    }
+
+    onMouseDown(){
+        if(mouseX > this.x+this.width || mouseX < this.x){
+            return;
+        }
+        this.grabberX = mouseX-(this.grabberRadius*2);
+        this.percentage = this.grabberX/this.width;
+        this.onValueChanged(this.maxValue*this.percentage);
+    }
+
+    update(){
+        if(mouseX > this.grabberX && mouseX < this.grabberX+this.x+(this.grabberRadius*2) && mouseY > this.y && mouseY < this.y+this.height)
+            if(mouseIsPressed)
+                this.onMouseDown();
+    }
+
+    draw(){
+        translate(this.x, this.y);
+        stroke(color('rgb(20, 20, 20)'))
+        strokeWeight(1)
+        line(0, (this.height/2), this.width, (this.height/2));
+        fill(color('rgb(5, 190, 250)'))
+        ellipse(this.grabberX, (this.height/2), (this.grabberRadius*2), (this.grabberRadius*2));
+        resetMatrix()
     }
 }
 
@@ -176,8 +223,10 @@ function setup(){
     });
 
     testLabel = new Label(toggleButton.x, toggleButton.y+toggleButton.height+20, 14, "Hello world!");
-
-
+    slideBar = new SliderBar(testLabel.x, testLabel.y+testLabel.height, 100, 0, 10);
+    slideBar.onValueChangedCallBack = function(value){
+        testLabel.text = "Slider bar value: "+(Math.round(value * 10)/10);
+    }
 }
 
 function mouseClicked(){
@@ -196,4 +245,7 @@ function draw(){
     toggleButton.update();
 
     testLabel.draw();
+
+    slideBar.update();
+    slideBar.draw();
 }
