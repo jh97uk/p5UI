@@ -230,6 +230,24 @@ class ProgressBar{
     }
 }
 
+class ListNode{
+    constructor(x, y, width, height, text, index){
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.text = text;
+        this.textLabel = new Label(this.x+7, this.y+textAscent()+8, 16, this.text);
+        this.index = index;
+    }
+
+    draw(){
+        fill(color('rgb(20, 20, 20)'))
+        //rect(this.x, this.y+2, this.width, this.height-2);
+        this.textLabel.draw();
+    }
+}
+
 class DropdownList{
     constructor(x, y, width, items){
         this.x = x;
@@ -237,16 +255,17 @@ class DropdownList{
         this.width = width;
         this.height = (textAscent()+1)+((7*2));
         this.items = items;
-        this.selectedItem = null;
+        this.selectedItemIndex = null;
         this.cornerRadius = new CornerRadius(2);
         this.currentlySelectedLabel = new Label(7, (textAscent()+1)+7, 16, "Select item");
         this.listItemLabels = [];
 
         for(var index = 0; index < this.items.length; index++)
-            this.listItemLabels.push(new Label(7, 24*(index+1), 14, items[index]));
-
+            this.listItemLabels.push(new ListNode(0, 24*(index), this.width, 24, items[index], index));
         this.dropdownTotalHeight = 24*(this.items.length)+this.height;
         this.showDropDown = false;
+
+        this.onItemSelectedCallback = function(){};
     }
 
     setSelectedItem(index){
@@ -257,6 +276,11 @@ class DropdownList{
         return this.selectedItem;
     }
 
+    onItemSelected(index){
+        this.currentlySelectedLabel.text = this.items[index];
+        this.onItemSelectedCallback(index);
+    }
+
     isBetween(val, min, max){
         return val >= min && val <= max; 
     }
@@ -264,8 +288,10 @@ class DropdownList{
     selectItemAtYPosition(yPosition){
         this.showDropDown = !this.showDropDown
         this.listItemLabels.forEach(element => {
-            if(this.isBetween(yPosition, this.y+this.height+element.y, this.y+this.height+element.y+element.height))
-                console.log(element.text);
+            if(this.isBetween(yPosition, this.y+this.height+element.y, this.y+this.height+element.y+element.height)){
+                this.selectedItem = element.index;
+                this.onItemSelected(element.index);
+            }
         });
     }
 
@@ -285,6 +311,8 @@ class DropdownList{
         if(this.showDropDown){
             if(mouseX >= this.x && mouseX <= this.x+this.width && mouseY >= this.y && mouseY <= this.y+this.dropdownTotalHeight){
                 this.selectItemAtYPosition(mouseY);
+            } else{
+                this.showDropDown = false;
             }
         } else {
             if(mouseX >= this.x && mouseX <= this.x+this.width && mouseY >= this.y && mouseY <= this.y+this.height)
@@ -325,6 +353,7 @@ class DropdownList{
             if(this.items.length > index)
             this.listItemLabels[index].draw();
         }
+        resetMatrix()
     }
 
     draw(){
@@ -361,7 +390,11 @@ function setup(){
 
     progressBar = new ProgressBar(slideBar.x, slideBar.y+slideBar.height+20, 150, 25, 0.94);
 
-    dropDownMenu = new DropdownList(progressBar.x, progressBar.y+progressBar.height+20, 125, ['one', 'two', 'three', 'four']);
+    var items = ['one', 'two', 'three', 'four']
+    dropDownMenu = new DropdownList(progressBar.x, progressBar.y+progressBar.height+20, 125, items);
+    dropDownMenu.onItemSelectedCallback = function(index){
+        testLabel.text = "Item dropdown selected: "+ items[index];
+    }
 }
 
 function mouseClicked(){
