@@ -230,6 +230,110 @@ class ProgressBar{
     }
 }
 
+class DropdownList{
+    constructor(x, y, width, items){
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = (textAscent()+1)+((7*2));
+        this.items = items;
+        this.selectedItem = null;
+        this.cornerRadius = new CornerRadius(2);
+        this.currentlySelectedLabel = new Label(7, (textAscent()+1)+7, 16, "Select item");
+        this.listItemLabels = [];
+
+        for(var index = 0; index < this.items.length; index++)
+            this.listItemLabels.push(new Label(7, 24*(index+1), 14, items[index]));
+
+        this.dropdownTotalHeight = 24*(this.items.length)+this.height;
+        this.showDropDown = false;
+    }
+
+    setSelectedItem(index){
+        this.selectedItem = this.items[index];
+    }
+
+    getSelectedItem(){
+        return this.selectedItem;
+    }
+
+    isBetween(val, min, max){
+        return val >= min && val <= max; 
+    }
+
+    selectItemAtYPosition(yPosition){
+        this.showDropDown = !this.showDropDown
+        this.listItemLabels.forEach(element => {
+            if(this.isBetween(yPosition, this.y+this.height+element.y, this.y+this.height+element.y+element.height))
+                console.log(element.text);
+        });
+    }
+
+    addItems(items){
+        this.items.concat(items);
+    }
+
+    removeItem(index){
+        this.items.splice(index, 1);
+    }
+
+    clearItems(){
+        this.items = [];
+    }
+
+    onClicked(){
+        if(this.showDropDown){
+            if(mouseX >= this.x && mouseX <= this.x+this.width && mouseY >= this.y && mouseY <= this.y+this.dropdownTotalHeight){
+                this.selectItemAtYPosition(mouseY);
+            }
+        } else {
+            if(mouseX >= this.x && mouseX <= this.x+this.width && mouseY >= this.y && mouseY <= this.y+this.height)
+                this.showDropDown = !this.showDropDown;
+        }
+        
+    }
+
+    update(){
+        this.currentlySelectedLabel.update();
+    }
+
+    drawStandalone(){
+        translate(this.x, this.y);
+        stroke(25);
+        fill(225);
+        rect(0, 0, this.width, this.height, this.cornerRadius.topLeft, this.cornerRadius.topRight, this.cornerRadius.bottomLeft, this.cornerRadius.bottomRight);
+        noStroke();
+        this.currentlySelectedLabel.draw();
+        resetMatrix();
+        
+        translate((this.x+this.width)-28, this.y);
+        fill(color(100))
+        triangle(7, 5, 21, 5, 14, 21);
+        resetMatrix();
+    }
+
+    drawDropdownList(){
+        translate(this.x, this.y+this.height)
+        fill(225);
+        rect(0, 0, this.width, 25*this.items.length);
+        
+        for(var index = 0; index < this.items.length+1; index++){
+            var lineY = 25*index;
+            stroke(1);
+            line(0, lineY, this.width, lineY);
+            noStroke();
+            if(this.items.length > index)
+            this.listItemLabels[index].draw();
+        }
+    }
+
+    draw(){
+        this.drawStandalone();
+        if(this.showDropDown)
+            this.drawDropdownList();
+    }
+}
+
 function setup(){
     createCanvas(windowWidth, windowHeight);
     button = new Button(20, 20, 100, 30, "Press me!", function(){
@@ -256,12 +360,15 @@ function setup(){
     }
 
     progressBar = new ProgressBar(slideBar.x, slideBar.y+slideBar.height+20, 150, 25, 0.94);
+
+    dropDownMenu = new DropdownList(progressBar.x, progressBar.y+progressBar.height+20, 125, ['one', 'two', 'three', 'four']);
 }
 
 function mouseClicked(){
     // Temporary, will make this work in the class standalone later on.
     button.onLeftClick(); 
     toggleButton.onClicked();
+    dropDownMenu.onClicked();
 }
 
 function draw(){
@@ -280,4 +387,7 @@ function draw(){
 
     progressBar.update();
     progressBar.draw();
+
+    dropDownMenu.update();
+    dropDownMenu.draw();
 }
