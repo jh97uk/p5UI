@@ -149,6 +149,14 @@ class Label{
         this.text = text;
     }
 
+    getTextWidth(){
+        var originalTextSize = textSize();
+        textSize(this.fontSize);
+        var textWidth1 = textWidth(this.text);
+        textSize(originalTextSize);
+        return textWidth1;
+    }
+
     update(){
     }
 
@@ -333,7 +341,6 @@ class DropdownList{
         noStroke();
         this.currentlySelectedLabel.draw();
         resetMatrix();
-        
         translate((this.x+this.width)-28, this.y);
         fill(color(100))
         triangle(7, 5, 21, 5, 14, 21);
@@ -360,6 +367,63 @@ class DropdownList{
         this.drawStandalone();
         if(this.showDropDown)
             this.drawDropdownList();
+    }
+}
+
+class TextBox{
+    constructor(x, y, width, height, placeholder){
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.placeholder = placeholder;
+        this.cornerRadius = new CornerRadius(2);
+        this.paddingLeft = 4;
+        this.placeholderLabel = new Label(this.paddingLeft, textAscent()/2+(height/2), 16, "Enter text here");
+        this.textInputLabel = new Label(this.paddingLeft, textAscent()/2+(height/2), "");
+        this.text = "";
+        this.isActive = false;
+    }
+
+    update(){
+
+    }
+
+    onClick(){
+        if(mouseX >= this.x && mouseX <= this.x+this.width && mouseY >= this.y && mouseY <= this.y+this.height)
+            this.isActive = true;
+    }
+
+    onKeyPressed(key){
+        if(key == "Shift")
+            return
+        if(key == "Backspace"){
+            this.text = this.text.slice(0, -1);
+        } else{
+            this.text+=key;
+        }
+        
+        this.textInputLabel.text = this.text;
+    }
+
+    draw(){
+        drawingContext.save();
+        translate(this.x, this.y)
+        fill(220);
+        stroke(1);
+        rect(0, 0, this.width, this.height, this.cornerRadius.topLeft, this.cornerRadius.topRight, this.cornerRadius.bottomLeft, this.cornerRadius.bottomRight);
+        noStroke();
+        drawingContext.clip();
+        if(!this.isActive)
+            this.placeholderLabel.draw();
+        else{
+            this.textInputLabel.draw();
+            stroke(1);
+            line(this.textInputLabel.getTextWidth()+6, 4, this.textInputLabel.getTextWidth()+6, this.height-4);
+            noStroke();
+        }
+        resetMatrix();
+        drawingContext.restore();
     }
 }
 
@@ -395,6 +459,8 @@ function setup(){
     dropDownMenu.onItemSelectedCallback = function(index){
         testLabel.text = "Item dropdown selected: "+ items[index];
     }
+
+    textBox = new TextBox(dropDownMenu.x, dropDownMenu.y+dropDownMenu.height+20, 150, 30, "This is my textbox");
 }
 
 function mouseClicked(){
@@ -402,6 +468,12 @@ function mouseClicked(){
     button.onLeftClick(); 
     toggleButton.onClicked();
     dropDownMenu.onClicked();
+    textBox.onClick();
+}
+
+function keyPressed(){
+    textBox.onKeyPressed(key);
+    
 }
 
 function draw(){
@@ -423,4 +495,7 @@ function draw(){
 
     dropDownMenu.update();
     dropDownMenu.draw();
+
+    textBox.update();
+    textBox.draw();
 }
