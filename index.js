@@ -404,6 +404,12 @@ class TextBox{
         }
         
         this.textInputLabel.text = this.text;
+        if(this.textInputLabel.getTextWidth()+(this.textInputLabel.fontSize/2)+this.paddingLeft >= this.width){
+            var overflowWidth = ((this.textInputLabel.getTextWidth()+(this.textInputLabel.fontSize/2)+this.paddingLeft)-this.width);
+            this.textInputLabel.x = this.paddingLeft-overflowWidth;
+        } else{
+            this.textInputLabel.x = this.paddingLeft;
+        }
     }
 
     draw(){
