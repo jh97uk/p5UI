@@ -380,7 +380,7 @@ class TextBox{
         this.cornerRadius = new CornerRadius(2);
         this.paddingLeft = 4;
         this.placeholderLabel = new Label(this.paddingLeft, textAscent()/2+(height/2), 16, "Enter text here");
-        this.textInputLabel = new Label(this.paddingLeft, textAscent()/2+(height/2), "");
+        this.textInputLabel = new Label(this.paddingLeft, textAscent()/2+(height/2), 16, "");
         this.text = "";
         this.isActive = false;
     }
