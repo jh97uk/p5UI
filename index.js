@@ -157,6 +157,14 @@ class Label{
         return textWidth1;
     }
 
+    getWidthOfText(text){
+        var originalTextSize = textSize();
+        textSize(this.fontSize);
+        var widthOfText = textWidth(text);
+        textSize(originalTextSize);
+        return widthOfText;
+    }
+
     update(){
     }
 
@@ -383,6 +391,8 @@ class TextBox{
         this.textInputLabel = new Label(this.paddingLeft, textAscent()/2+(height/2), 16, "");
         this.text = "";
         this.isActive = false;
+        this.cursorPositionByIndex = this.text.length;
+        this.cursorPositionByX = this.textInputLabel.getTextWidth()
     }
 
     update(){
@@ -390,8 +400,11 @@ class TextBox{
     }
 
     onClick(){
-        if(mouseX >= this.x && mouseX <= this.x+this.width && mouseY >= this.y && mouseY <= this.y+this.height)
+        if(mouseX >= this.x && mouseX <= this.x+this.width && mouseY >= this.y && mouseY <= this.y+this.height){
             this.isActive = true;
+            
+        }
+
     }
 
     onKeyPressed(key){
@@ -399,16 +412,32 @@ class TextBox{
             return
         if(key == "Backspace"){
             this.text = this.text.slice(0, -1);
+            this.cursorPositionByIndex = this.text.length;
+        } else if(key == "ArrowLeft"){
+            if(this.cursorPositionByIndex > 0)
+                this.cursorPositionByIndex-=1;
+        } else if(key == "ArrowRight"){
+            if(this.cursorPositionByIndex < this.text.length+1)
+                this.cursorPositionByIndex+=1
         } else{
-            this.text+=key;
+            if(this.text.length == this.cursorPositionByIndex){
+                this.text+=key;
+                this.cursorPositionByIndex = this.text.length;
+            } else{
+                this.text = this.text.substring(0, this.cursorPositionByIndex) + key + this.text.substring(this.cursorPositionByIndex)
+                this.cursorPositionByIndex = this.cursorPositionByIndex+1
+            }
+            
         }
-        
+
         this.textInputLabel.text = this.text;
         if(this.textInputLabel.getTextWidth()+(this.textInputLabel.fontSize/2)+this.paddingLeft >= this.width){
             var overflowWidth = ((this.textInputLabel.getTextWidth()+(this.textInputLabel.fontSize/2)+this.paddingLeft)-this.width);
             this.textInputLabel.x = this.paddingLeft-overflowWidth;
+            this.cursorPositionByX = this.textInputLabel.getWidthOfText(this.text.substring(0, this.cursorPositionByIndex)) - overflowWidth;
         } else{
             this.textInputLabel.x = this.paddingLeft;
+            this.cursorPositionByX = this.textInputLabel.getWidthOfText(this.text.substring(0, this.cursorPositionByIndex));
         }
     }
 
@@ -425,7 +454,7 @@ class TextBox{
         else{
             this.textInputLabel.draw();
             stroke(1);
-            line(this.textInputLabel.getTextWidth()+6, 4, this.textInputLabel.getTextWidth()+6, this.height-4);
+            line(this.cursorPositionByX+4, 4, this.cursorPositionByX+4, this.height-4);
             noStroke();
         }
         resetMatrix();
