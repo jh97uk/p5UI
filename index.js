@@ -393,18 +393,41 @@ class TextBox{
         this.isActive = false;
         this.cursorPositionByIndex = this.text.length;
         this.cursorPositionByX = this.textInputLabel.getTextWidth()
+
+        this.charactersXPosition = [];
     }
 
     update(){
 
     }
 
+    clickedAtPosition(x, y){
+        if(this.charactersXPosition.length > 0){
+            
+
+            if(this.textInputLabel.getTextWidth()+(this.textInputLabel.fontSize/2)+this.paddingLeft >= this.width){
+                var overflowWidth = ((this.textInputLabel.getTextWidth()+(this.textInputLabel.fontSize/2)+this.paddingLeft)-this.width);
+                var closest = this.charactersXPosition.reduce(function(prev, curr) {
+                    return (Math.abs(Math.floor(curr-overflowWidth) - x) < Math.abs(Math.ceil(prev-overflowWidth) - x) ? curr : prev);
+                });
+                this.cursorPositionByIndex =  this.charactersXPosition.indexOf(closest)+1;
+                this.cursorPositionByX = this.textInputLabel.getWidthOfText(this.text.substring(0, this.cursorPositionByIndex)) - overflowWidth;
+            } else{
+                var closest = this.charactersXPosition.reduce(function(prev, curr) {
+                    return (Math.abs(Math.floor(curr) - x) < Math.abs(Math.floor(prev) - x) ? curr : prev);
+                });
+                this.cursorPositionByIndex = this.charactersXPosition.indexOf(closest);
+                this.cursorPositionByX = closest;
+            }
+            
+        }
+    }
+
     onClick(){
         if(mouseX >= this.x && mouseX <= this.x+this.width && mouseY >= this.y && mouseY <= this.y+this.height){
             this.isActive = true;
-            
         }
-
+        this.clickedAtPosition(mouseX-this.x, mouseY-this.y);
     }
 
     onKeyPressed(key){
@@ -431,6 +454,7 @@ class TextBox{
         }
 
         this.textInputLabel.text = this.text;
+        this.charactersXPosition.push(this.textInputLabel.getTextWidth()); // make sure you account for the position of the text cursor.
         if(this.textInputLabel.getTextWidth()+(this.textInputLabel.fontSize/2)+this.paddingLeft >= this.width){
             var overflowWidth = ((this.textInputLabel.getTextWidth()+(this.textInputLabel.fontSize/2)+this.paddingLeft)-this.width);
             this.textInputLabel.x = this.paddingLeft-overflowWidth;
